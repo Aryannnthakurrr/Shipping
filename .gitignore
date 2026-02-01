@@ -1,0 +1,4 @@
+__pycache__/
+THREAD_SAFETY.md
+sqlite.db
+venv/
