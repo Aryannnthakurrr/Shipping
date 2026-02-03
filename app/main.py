@@ -1,9 +1,19 @@
 from fastapi import FastAPI, status, HTTPException as http, Depends
 from scalar_fastapi import get_scalar_api_reference
+from contextlib import asynccontextmanager
+from app.database.session import create_db_tables
+
 from .schemas import ShipmentCreate, ShipmentRead, ShipmentUpdate
 from .database import Database
  
-app = FastAPI()
+@asynccontextmanager
+async def lifespan_handler(app: FastAPI):
+    create_db_tables()
+    print("Server started")
+    yield
+    print("Server stopped")
+
+app = FastAPI(lifespan=lifespan_handler)
 
 
 def get_db():
@@ -22,7 +32,7 @@ app.get("/scalar", include_in_schema=False)(
 
 ###  a shipment by id
 @app.get("/shipment", response_model=ShipmentRead)
-def get_shipment(id: int, db: Database = Depends(get_db)):
+def get_shipment(id: int, db: Database = Depends(get_db),):
     # Check for shipment with given id
     shipment = db.get(id)
     if shipment is None:
